@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ book }}{% endblock %}
+{% block h1 %}{{ book }}{% ifnotequal chapter None %} {{ chapter }}{% endifnotequal %}{% ifnotequal verse None %}:{{ verse }}{% endifnotequal %}{% ifnotequal verse2 None %}-{{ verse2 }}{% endifnotequal %}:{% endblock %}
+{% block content %}
+<ul class="verses">
+  {% for verse in verses_list %}
+  <li>{{ verse.book }} {{ verse.chapter }}:{{verse.verse}}: "{{verse.verseText}}"</li>
+  {% endfor %}
+</ul>
+{% endblock %}

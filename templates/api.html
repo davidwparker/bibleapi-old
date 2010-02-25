@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}The Bible API | API overview{% endblock %}
+{% block h1 %} API overview {% endblock %}
+{% block content %}
+<h3>The Bible API is a RESTful API.</h3>
+What's this mean?  That means that all requests are made using HTTP "GET" requests against a given URL for a Resource.
+<h3>JSON</h3>
+We only support the returning of JSON and have no plans to support returning XML.
+<h3>Testing out the API using curl</h3>
+Using <a href="">Curl</a>, you can test the API as follows:<br />
+<code>
+curl --header "Accept: application/json" http://localhost:8000/bible/VERSION/BOOK/CHAPTER/VERSE-VERSE2/
+</code>
+<h3>Header and Variables</h3>
+<ul>
+  <li>The Accept header is required and will return the website HTML if it is not present.</li>
+  <li>(required) VERSION, limits the results to only the version.</li>
+  <li>(required) BOOK, limits the results to only the book.</li>
+  <li>(required) CHAPTER, limits the results to only the chapter.</li>
+  <li>(optional) VERSE, if provided with CHAPTER, will limit the results to only the given verse.</li>
+  <li>(optional) VERSE2, if provided with CHAPTER and VERSE, will limit the results to a range of verses.</li>
+</ul>
+Don't forget the trailing forward slash: "/"
+{% endblock %}

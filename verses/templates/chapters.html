@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}The Bible API | Chapter list{% endblock %}
+{% block h1 %}Chapter list{% endblock %}
+{% block content %}
+Copyright
+{{ copyright }}
+Chapters
+<ul class="chapters">
+  {% for chapter in chapters %}
+      <li><a href="/bible/{{version}}/{{book}}/{{chapter}}/">Chapter {{ chapter }}</a></li>
+  {% endfor %}</ul>
+{% endblock %}

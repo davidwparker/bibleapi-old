@@ -2,11 +2,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
 <head>
-  <title>{% block title %}{% endblock %}</title>
+  <title>{% block title %}The Bible API{% endblock %}</title>
   <link rel="stylesheet" type="text/css" href="/site_media/css/screen.css" />
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <!--[if IE]> 
-    <link rel="stylesheet" href="css/ie.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="/site_media/css/ie.css" type="text/css" media="screen, projection" />
   <![endif]-->
 </head>
 <body>
@@ -19,6 +19,8 @@
     <ul class="navigation">
       {% block navigation%}
         <li><a href="/">index</a></li>
+        <li><a href="/bible/search/">search</a></li>
+        <li><a href="/api/">api</a></li>
         {% if user.is_superuser %}
         <li><a href="/admin/">admin</a></li>
         {% endif %}
@@ -30,11 +32,29 @@
         {% endif %}
       {% endblock %}
     </ul>
-    <h1>{% block h1 %}{% endblock %}</h1>
+    <h1>{% block h1 %}The Bible API{% endblock %}</h1>
     <div class="content">{% block content %}{% endblock %}</div>
     <div class="footer">
-      {% copyright_tag "2005" %} <a href="http://davidwparker.com">david parker</a>
+      {% copyright_tag "2009" %} | <a href="http://davidwparker.com">david parker</a>
     </div>
   </div>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+      $(".books a").click(function(e){
+/*
+        $.ajax({
+          url: $(this).attr("href"),
+          contentType:"text/json",
+          dataType:"json",
+          success: function(data){
+            alert(data);
+          }
+        })
+        return false;
+*/      });
+    });
+  </script>
 </body>
 </html>

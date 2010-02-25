@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}search{% endblock %}
+{% block content %}
+{% if errors %}
+  <ul>
+    {% for error in errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<form action="" method="get">
+  <input type="text" name="q" />
+  <input type="submit" name="search" value="search" />
+</form>
+{% if q %}<p>You searched for: <strong>{{ q }}</strong></p>
+  {% if verses %}
+      <p>Found {{ verses|length }} verse{{ verses|pluralize }}.</p>
+      <ul>
+          {% for verse in verses %}
+          <li>{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }} - {{ verse.verseText }}</li>
+          {% endfor %}
+      </ul>
+      {{ count }}
+  {% else %}
+      <p>No verses matched your search criteria.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}
