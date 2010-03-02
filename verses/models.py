@@ -1,16 +1,19 @@
 from django.db import models
 from django.http import Http404
 
+import logging
+
 class Verse(models.Model):
   version = models.CharField(max_length=100)
   book = models.CharField(max_length=100)
+  bookOrder = models.IntegerField()
   chapter = models.IntegerField()
   verse = models.IntegerField()
   verseText = models.TextField('text')
   
   class Meta:
     db_table = 'verses'
-    ordering = ('chapter','verse')
+    ordering = ['bookOrder','chapter','verse']
   
   #django methods  
   def __unicode__(self):
@@ -22,7 +25,7 @@ class Verse(models.Model):
   #
   def book_exists(self, version, book):
     '''Returns whether a book exists'''
-    return Verse().get_chapters(version, book).exists()
+    return Verse.objects.filter(version__iexact=version, book__iexact=book).exists()
 
   def book_exists_or_404(self, version, book):
     '''Raises Http404 if book does not exist'''
@@ -39,36 +42,55 @@ class Verse(models.Model):
       raise Http404
 
   #
+  # custom SQL
+  #
+  def get_array(self, *args, **kwargs):
+    '''Returns an array based on the keyword arguments'''
+    from django.db import connection, transaction
+    cursor = connection.cursor()
+    cursor.execute(kwargs["query"], kwargs["params"])
+    rows = cursor.fetchall()
+    results = []
+    for row in rows:
+      results.append(row)
+    return results    
+
+  def get_first_col(self, list):
+    results = []
+    for obj in list:
+      results.append(obj[0])
+    return results
+
+  def get_book_names_from_abbr(self, version, abbr):
+    '''Returns a list of book_names from an abbreviation'''
+    abbr = '%' + abbr + '%'
+    books = Verse().get_array(params=[version,abbr], query="SELECT DISTINCT book FROM verses WHERE version = %s AND book LIKE %s")
+    return Verse().get_first_col(books)
+
+  def get_book_chapters(self, version):
+    '''Returns a list of unique book names with their chapters'''
+    book_chapters = Verse().get_array(params=[version], query="SELECT DISTINCT book, chapter FROM verses WHERE version = %s ORDER BY bookOrder, chapter")
+    book = None
+    chapters = []
+    results = []
+    for row in book_chapters:
+      if book is None:
+        book = row[0]
+      if book != row[0]:
+        results.append({'book':book, 'chapters':chapters})
+        book = row[0]
+        chapters = []
+      chapters.append(row[1])
+    return results
+
+  def get_chapter_numbers(self, version, book):
+    '''Returns a list of unique chapter numbers'''
+    chapters = Verse().get_array(params=[version,book], query="SELECT DISTINCT chapter FROM verses WHERE version = %s AND book = %s ORDER BY chapter")
+    return Verse().get_first_col(chapters)
+  
+  #
   # filters/lists of objects
   #
-  def get_books(self, version):
-    '''Returns a list of books for a given version'''
-    return Verse.objects.filter(version__iexact=version)
-  
-  def get_book_names(self, verses):
-    '''Returns a list of unique book names'''
-    books = []
-    for verse in verses:
-      book = verse.book
-      if book not in books:
-        books.append(book)
-    return books
-
-  def get_chapters(self, version, book):
-    '''Returns a list of verses for a given version and book'''
-    #TODO: I'd like to find a way to do a distinct here, rather than afterward...
-    #I'd also like to NOT have to break up my model to do so
-    return Verse.objects.filter(version__iexact=version, book__iexact=book)
-
-  def get_chapter_numbers(self, verses):
-    '''Returns a list of unique chapter numbers'''
-    chapters = []
-    for verse in verses:
-      chapter = verse.chapter
-      if chapter not in chapters:
-        chapters.append(chapter)
-    return chapters
-  
   def get_verses(self, version, book, chapter):
     '''Returns a list of verses for a given version, book, and chapter'''
     return Verse.objects.filter(version__iexact=version, book__iexact=book, chapter__iexact=chapter)

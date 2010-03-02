@@ -9,10 +9,16 @@
   </ul>
 {% endif %}
 <form action="" method="get">
-  <input type="text" name="q" />
+  <input type="text" class="text" name="q" value="{{q}}" />
+  <select name="v">
+    <option value="asv">American Standard Version (ASV)</option>
+    <option value="basicenglish">Basic English</option>
+    <option value="oops">oops</option>
+    <option value=""></option>
+  </select>
   <input type="submit" name="search" value="search" />
 </form>
-{% if q %}<p>You searched for: <strong>{{ q }}</strong></p>
+{% if q %}
   {% if verses %}
       <p>Found {{ verses|length }} verse{{ verses|pluralize }}.</p>
       <ul>
