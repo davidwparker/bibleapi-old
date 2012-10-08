@@ -1,8 +1,6 @@
 from django.db import models
 from django.http import Http404
 
-import logging
-
 class Verse(models.Model):
   version = models.CharField(max_length=100)
   book = models.CharField(max_length=100)
@@ -49,22 +47,18 @@ class Verse(models.Model):
     from django.db import connection, transaction
     cursor = connection.cursor()
     cursor.execute(kwargs["query"], kwargs["params"])
-    rows = cursor.fetchall()
+    return cursor.fetchall()
+
+  def get_first_col(self, rows):
     results = []
     for row in rows:
-      results.append(row)
-    return results    
-
-  def get_first_col(self, list):
-    results = []
-    for obj in list:
-      results.append(obj[0])
+      results.append(row[0])
     return results
 
   def get_book_names_from_abbr(self, version, abbr):
     '''Returns a list of book_names from an abbreviation'''
     abbr = '%' + abbr + '%'
-    books = Verse().get_array(params=[version,abbr], query="SELECT DISTINCT book FROM verses WHERE version = %s AND book LIKE %s")
+    books = Verse().get_array(params=[version,abbr], query="SELECT DISTINCT book FROM verses WHERE version = %s AND book LIKE %s ORDER BY bookOrder")
     return Verse().get_first_col(books)
 
   def get_book_chapters(self, version):
@@ -91,7 +85,7 @@ class Verse(models.Model):
   #
   # filters/lists of objects
   #
-  def get_verses(self, version, book, chapter):
+  def get_verses_bc(self, version, book, chapter):
     '''Returns a list of verses for a given version, book, and chapter'''
     return Verse.objects.filter(version__iexact=version, book__iexact=book, chapter__iexact=chapter)
 
@@ -99,22 +93,13 @@ class Verse(models.Model):
     '''Returns an exact verse'''
     return Verse.objects.filter(version__iexact=version, book__iexact=book, chapter__iexact=chapter, verse__iexact=verse)
 
-  def get_verses_range(self, version, book, chapter, verse, verse2):
-    '''Returns a list of verses in a given range'''
-    return Verse.objects.filter(version__iexact=version, book__iexact=book, chapter__iexact=chapter, verse__in=range(int(verse),int(verse2)+1))
-  
-  def get_verses_or_404(self, version, book, chapter, verse, verse2):
+  def get_verses(self, version, book, chapter, verse, verse2):
     '''Returns a list of verses or Raises Http404'''
     if verse is None:
-      verses = Verse().get_verses(version, book, chapter)
-    elif verse2 is None:
+      verses = Verse().get_verses_bc(version, book, chapter)
+    elif verse2 is None or verse2 < verse:
       verses = Verse().get_verse(version, book, chapter, verse)
     else:
-      if verse2 < verse:
-        raise Http404
-      verses = Verse().get_verses_range(version, book, chapter, verse, verse2)
-
-    if verses.count() == 0:
-      raise Http404
+      verses = Verse.objects.filter(version__iexact=version, book__iexact=book, chapter__iexact=chapter, verse__in=range(int(verse),int(verse2)+1))
 
     return verses

@@ -1,14 +1,21 @@
 {% extends "base.html" %}
-{% block title %}search{% endblock %}
+{% block title %}Search | The Bible API{% endblock %}
 {% block content %}
 {% if errors %}
-  <ul>
+  <ul class="error">
     {% for error in errors %}
       <li>{{ error }}</li>
     {% endfor %}
   </ul>
 {% endif %}
-<form action="" method="get">
+{% if notices %}
+  <ul class="notice">
+    {% for notice in notices %}
+      <li>{{ notice }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<form action="" method="get" id="search_form">
   <input type="text" class="text" name="q" value="{{q}}" />
   <select name="v">
     <option value="asv">American Standard Version (ASV)</option>
@@ -17,18 +24,29 @@
     <option value=""></option>
   </select>
   <input type="submit" name="search" value="search" />
-</form>
+</form>{% spaceless %}
 {% if q %}
-  {% if verses %}
-      <p>Found {{ verses|length }} verse{{ verses|pluralize }}.</p>
-      <ul>
-          {% for verse in verses %}
-          <li>{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }} - {{ verse.verseText }}</li>
-          {% endfor %}
-      </ul>
-      {{ count }}
-  {% else %}
-      <p>No verses matched your search criteria.</p>
+  <a href="#passages">jump to Passage results</a> | <a href="#keywords">jump to Keyword results</a>
+  <h2 id="passages" class="header">Passage Search results</h2>
+  {% if books %}
+  Read more in:<ul>{% for book in books%}<li><a href="/bible/{{ v }}/{{ book }}">{{ book }}</a></li>{% endfor %}</ul>
   {% endif %}
-{% endif %}
+  {% if verses %}
+    <p>Found {{ verses|length }} passage verse{{ verses|pluralize }}.</p>
+    <ul>{% for verse in verses %}
+        <li><a href="/bible/{{ v }}/{{ verse.book }}/{{ verse.chapter }}/{{ verse.verse }}/">{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }}</a> - {{ verse.verseText }}</li>{% endfor %}
+    </ul>
+  {% else %}
+      <p class="notice">No passage verses matched your search criteria.</p>
+  {% endif %}
+  <h2 id="keywords" class="header">Keyword Search results</h2>
+  {% if keyverses %}
+    <p>Found {{ keyverses|length }} keyword verse{{ keyverses|pluralize }}.</p>
+    <ul>{% for verse in keyverses %}
+        <li><a href="/bible/{{ v }}/{{ verse.book }}/{{ verse.chapter }}/{{ verse.verse }}/">{{ verse.book }} {{ verse.chapter }}:{{ verse.verse }}</a> - {{ verse.verseText }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="notice">No keyword verses matched your search criteria.</p>
+  {% endif %}
+{% endif %}{% endspaceless %}
 {% endblock %}
